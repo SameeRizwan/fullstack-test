@@ -103,21 +103,7 @@
             margin-bottom: 0.5rem;
         }
         
-        .form-group input,
-        .form-group textarea {
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
+        /* Web Awesome components will handle input styling */
         
         .loading {
             display: none;
@@ -227,43 +213,43 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="title">Product Title *</label>
-                            <input type="text" id="title" name="title" required>
+                            <input type="text" id="title" name="title" required class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="handle">Handle</label>
-                            <input type="text" id="handle" name="handle">
+                            <wa-input type="text" id="handle" name="handle"></wa-input>
                         </div>
                         
                         <div class="form-group">
                             <label for="vendor">Vendor</label>
-                            <input type="text" id="vendor" name="vendor">
+                            <wa-input type="text" id="vendor" name="vendor"></wa-input>
                         </div>
                         
                         <div class="form-group">
                             <label for="productType">Product Type</label>
-                            <input type="text" id="productType" name="productType">
+                            <wa-input type="text" id="productType" name="productType"></wa-input>
                         </div>
                         
                         <div class="form-group">
                             <label for="price">Price</label>
-                            <input type="number" id="price" name="price" step="0.01">
+                            <wa-input type="number" id="price" name="price" step="0.01"></wa-input>
                         </div>
                         
                         <div class="form-group">
                             <label for="sku">SKU</label>
-                            <input type="text" id="sku" name="sku">
+                            <wa-input type="text" id="sku" name="sku"></wa-input>
                         </div>
                         
                         <div class="form-group">
                             <label for="imageUrl">Image URL</label>
-                            <input type="url" id="imageUrl" name="imageUrl">
+                            <wa-input type="url" id="imageUrl" name="imageUrl"></wa-input>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="3"></textarea>
+                        <wa-textarea id="description" name="description" rows="3"></wa-textarea>
                     </div>
                     
                     <wa-button type="submit" class="wa-button wa-button--primary">

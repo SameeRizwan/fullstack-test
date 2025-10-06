@@ -4,14 +4,14 @@ This project demonstrates a fullstack application built with the specified tech 
 
 ## 🚀 Tech Stack
 
-- **Backend**: Spring Boot 3.3.0 with Kotlin
+- **Backend**: Spring Boot 3.4.0 with Kotlin 2.2.0
 - **Database**: PostgreSQL with Flyway migrations
 - **Database Access**: JdbcClient (Spring 6+)
 - **Frontend**: Thymeleaf server-side rendering + HTMX
 - **UI Components**: Web Awesome design system
-- **Build Tool**: Gradle with Kotlin DSL
+- **Build Tool**: Gradle 9.1.0 with Kotlin DSL
 - **Scheduling**: @Scheduled for background jobs
-- **JVM**: Java 21 (latest LTS)
+- **JVM**: Java 24 (latest version)
 
 ## 📋 Features
 
@@ -34,11 +34,11 @@ This project demonstrates a fullstack application built with the specified tech 
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
-- **Java 21** (LTS version) - Required for compilation and runtime
+- **Java 24** (latest version) - Required for compilation and runtime
 - **Docker Desktop** (for PostgreSQL)
 - **IntelliJ IDEA Ultimate** (EAP program for free access)
 
-> ✅ **Note**: This project uses Java 21 LTS with Gradle 9.1.0+ for optimal compatibility and performance.
+> ✅ **Note**: This project uses Java 24 with Gradle 9.1.0+ and Kotlin 2.2.0 for optimal compatibility and performance.
 
 ### Running the Application
 
@@ -102,6 +102,8 @@ docker-compose down
 4. **Web Awesome**: Consistent design system with modern components
 5. **Flyway Migrations**: Version-controlled database schema changes
 6. **Kotlin DSL**: Type-safe Gradle configuration
+7. **Java 24**: Latest Java features and performance improvements
+8. **Kotlin 2.2.0**: Latest Kotlin with enhanced language features
 
 ## 🚀 Next Steps for AI Integration
 

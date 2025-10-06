@@ -28,9 +28,18 @@ replay_pid*
 *.gradle/
 *.build/
 build/
+gradle.properties
+gradlew
+gradlew.bat
+gradle-app.setting
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+# Gradle Wrapper (keep only essential files)
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # IntelliJ IDEA
 .idea/
@@ -38,9 +47,45 @@ build/
 *.iws
 *.iml
 *.ipr
+*.iws
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+# IntelliJ IDEA specific files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/shelf
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes
+.idea/caches
+.idea/libraries
+.idea/artifacts
+.idea/compiler.xml
+.idea/copyright/
+.idea/encodings.xml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/runConfigurations/
+.idea/sonarlint/
+.idea/vcs.xml
+.idea/workspace.xml
+.idea/*.iml
+.idea/*.ipr
+.idea/*.iws
 
 # Eclipse
 .apt_generated
