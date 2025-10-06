@@ -122,13 +122,3 @@ The project is ready for AI-assisted feature development. The following features
 - **Connection Pooling**: Efficient database connection management
 - **Caching Strategy**: Ready for Redis integration if needed
 
-## 🔒 Security Features
-
-- **SQL Injection Prevention**: Parameterized queries with JdbcClient
-- **XSS Protection**: Thymeleaf auto-escaping
-- **CSRF Protection**: Spring Security ready
-- **Input Validation**: Server-side validation
-
----
-
-**Built with ❤️ using Spring Boot, Kotlin, HTMX, and Web Awesome**
