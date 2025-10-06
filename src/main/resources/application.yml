@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: fullstack-test
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fullstack
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.fullstack.test: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.client: DEBUG
+
+app:
+  products:
+    api:
+      url: https://famme.no/products.json
+    clear-on-restart: false  # Set to true to clear all products on application restart
