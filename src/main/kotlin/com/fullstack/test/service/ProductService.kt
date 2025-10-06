@@ -154,5 +154,49 @@ class ProductService(
             logger.error("Error clearing products: ${e.message}", e)
         }
     }
+
+    fun getProductById(id: Long): Product? {
+        return productRepository.findById(id)
+    }
+
+    fun searchProductsByTitle(searchTerm: String): List<Product> {
+        return if (searchTerm.isBlank()) {
+            getAllProducts()
+        } else {
+            productRepository.findByTitleContaining(searchTerm)
+        }
+    }
+
+    fun updateProduct(product: Product): Product? {
+        return productRepository.update(product)
+    }
+
+    fun deleteProduct(id: Long): Boolean {
+        return productRepository.deleteById(id)
+    }
+
+    fun searchProductsWithFilters(
+        searchTerm: String?,
+        productType: String?,
+        minPrice: String?,
+        maxPrice: String?,
+        available: String?
+    ): List<Product> {
+        val minPriceDecimal = minPrice?.toBigDecimalOrNull()
+        val maxPriceDecimal = maxPrice?.toBigDecimalOrNull()
+        val availableBoolean = available?.toBooleanStrictOrNull()
+        
+        return productRepository.findByFilters(
+            searchTerm = searchTerm,
+            productType = productType,
+            minPrice = minPriceDecimal,
+            maxPrice = maxPriceDecimal,
+            available = availableBoolean
+        )
+    }
+
+    fun getProductTypes(): List<String> {
+        return productRepository.getDistinctProductTypes()
+    }
 }
 

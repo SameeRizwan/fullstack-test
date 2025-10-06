@@ -184,13 +184,18 @@
                     Load Products from API
                 </wa-button>
                 
+                <wa-button href="/search" class="wa-button wa-button--secondary">
+                    <i class="wa-icon wa-icon--search"></i>
+                    Search Products
+                </wa-button>
+                
                 <wa-button class="wa-button wa-button--secondary" 
                         hx-post="/products/clear" 
                         hx-target="#products-container"
                         hx-indicator="#loading"
                         hx-confirm="Are you sure you want to clear all products?"
                         hx-on::after-request="htmx.ajax('GET', '/products/count', {target: '#product-count'});">
-                    <i class="fas fa-trash"></i>
+                    <i class="wa-icon wa-icon--trash"></i>
                     Clear All Data
                 </wa-button>
             </div>
@@ -218,32 +223,32 @@
                         
                         <div class="form-group">
                             <label for="handle">Handle</label>
-                            <wa-input type="text" id="handle" name="handle"></wa-input>
+                            <input type="text" id="handle" name="handle" class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="vendor">Vendor</label>
-                            <wa-input type="text" id="vendor" name="vendor"></wa-input>
+                            <input type="text" id="vendor" name="vendor" class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="productType">Product Type</label>
-                            <wa-input type="text" id="productType" name="productType"></wa-input>
+                            <input type="text" id="productType" name="productType" class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="price">Price</label>
-                            <wa-input type="number" id="price" name="price" step="0.01"></wa-input>
+                            <input type="number" id="price" name="price" step="0.01" class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="sku">SKU</label>
-                            <wa-input type="text" id="sku" name="sku"></wa-input>
+                            <input type="text" id="sku" name="sku" class="wa-input">
                         </div>
                         
                         <div class="form-group">
                             <label for="imageUrl">Image URL</label>
-                            <wa-input type="url" id="imageUrl" name="imageUrl"></wa-input>
+                            <input type="url" id="imageUrl" name="imageUrl" class="wa-input">
                         </div>
                     </div>
                     
@@ -260,5 +265,159 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <div id="delete-dialog" class="delete-dialog">
+        <div class="delete-dialog-content">
+            <h3>Delete Product</h3>
+            <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+            <div class="delete-dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDeleteDialog()">Cancel</button>
+                <button class="dialog-btn dialog-btn-delete" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Delete confirmation dialog */
+        .delete-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none !important;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .delete-dialog.show {
+            display: flex !important;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .delete-dialog-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .delete-dialog h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .delete-dialog p {
+            margin: 0 0 1.5rem 0;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .delete-dialog-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dialog-btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .dialog-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .dialog-btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .dialog-btn-delete:hover {
+            background: #b91c1c;
+        }
+    </style>
+
+    <script>
+        let productToDelete = null;
+
+        // Ensure dialog is hidden on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const dialog = document.getElementById('delete-dialog');
+            if (dialog) {
+                dialog.classList.remove('show');
+            }
+        });
+
+        function openDeleteDialog(productId) {
+            productToDelete = productId;
+            document.getElementById('delete-dialog').classList.add('show');
+        }
+
+        function closeDeleteDialog() {
+            productToDelete = null;
+            document.getElementById('delete-dialog').classList.remove('show');
+        }
+
+        // Initialize dialog event listeners after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const dialog = document.getElementById('delete-dialog');
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            
+            if (dialog) {
+                dialog.classList.remove('show');
+                
+                // Close dialog when clicking outside
+                dialog.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeDeleteDialog();
+                    }
+                });
+            }
+            
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    if (productToDelete) {
+                        // Use HTMX to delete the product
+                        htmx.ajax('DELETE', '/products/' + productToDelete, {
+                            target: '#products-container',
+                            swap: 'innerHTML'
+                        }).then(() => {
+                            // Update product count after deletion
+                            htmx.ajax('GET', '/products/count', {target: '#product-count'});
+                        });
+                        closeDeleteDialog();
+                    }
+                });
+            }
+        });
+
+        // Close dialog with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteDialog();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -169,6 +169,134 @@
             overflow-x: auto;
             width: 100%;
         }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.875rem;
+        }
+
+        .edit-btn {
+            background: #dbeafe;
+            color: #1d4ed8;
+            margin: 1rem;
+        }
+
+        .edit-btn:hover {
+            background: #bfdbfe;
+            color: #1e40af;
+        }
+
+        .edit-btn i {
+            color: inherit !important;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            margin: 1rem;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+            color: #b91c1c;
+        }
+
+        .delete-btn i {
+            color: inherit !important;
+        }
+
+        /* Delete confirmation dialog */
+        .delete-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none !important;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .delete-dialog.show {
+            display: flex !important;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .delete-dialog-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .delete-dialog h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .delete-dialog p {
+            margin: 0 0 1.5rem 0;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .delete-dialog-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dialog-btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .dialog-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .dialog-btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .dialog-btn-delete:hover {
+            background: #b91c1c;
+        }
         
         
         @media (max-width: 768px) {
@@ -216,6 +344,7 @@
                     <th>Status</th>
                     <th>Variants</th>
                     <th>Created</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -263,6 +392,23 @@
                         <div th:if="${product.createdAt != null}" th:text="${#temporals.format(product.createdAt, 'MMM dd, yyyy')}">Jan 01, 2024</div>
                         <div th:unless="${product.createdAt != null}" class="text-gray-400">-</div>
                     </td>
+                    <td>
+                        <div class="action-buttons">
+                            <wa-button th:href="@{/products/{id}/edit(id=${product.id})}" 
+                               class="action-btn edit-btn" 
+                               style="margin: 1rem;"
+                               title="Edit Product">
+                                <i class="wa-icon wa-icon--edit"></i>
+                                Edit
+                            </wa-button>
+                            <wa-button th:onclick="'openDeleteDialog(' + ${product.id} + ')'" 
+                                    class="action-btn delete-btn" 
+                                    title="Delete Product">
+                                <i class="wa-icon wa-icon--trash"></i>
+                                Delete
+                            </wa-button>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -273,5 +419,6 @@
             <p>Click "Load Products from API" to fetch products or add a new product using the form below.</p>
         </div>
     </div>
+
 </body>
 </html>

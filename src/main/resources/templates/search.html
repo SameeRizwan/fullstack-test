@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    
+    <!-- Web Awesome 3 -->
+    <link rel="stylesheet" href="https://early.webawesome.com/webawesome@3.0.0-beta.6/dist/styles/webawesome.css" />
+    <script type="module" src="https://early.webawesome.com/webawesome@3.0.0-beta.6/dist/webawesome.loader.js"></script>
+        
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .search-section {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-section h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .search-input-container {
+            position: relative;
+            max-width: 600px;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1.125rem;
+            z-index: 1;
+        }
+        
+        .search-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+        
+        .search-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .search-button:active {
+            transform: translateY(0);
+        }
+        
+        .search-results-info {
+            margin-top: 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .filter-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            transition: color 0.2s ease-in-out;
+        }
+        
+        .back-link:hover {
+            color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Product Search</h1>
+            <p>Search for products by title with real-time results</p>
+        </div>
+        
+        <div class="content">
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Product Management
+            </a>
+            
+            <div class="search-section">
+                <h3>Search & Filter Products</h3>
+                <form id="search-form" hx-get="/products/search" hx-target="#search-results" hx-indicator="#search-loading">
+                    <div class="search-input-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" 
+                               id="search-input" 
+                               class="search-input" 
+                               placeholder="Type to search products by title..."
+                               name="q">
+                        <button type="submit" class="search-button">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                    
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label for="productType">Product Type</label>
+                            <select id="productType" name="productType" class="wa-select">
+                                <option value="">All Types</option>
+                                <option th:each="type : ${productTypes}" 
+                                        th:value="${type}" 
+                                        th:text="${type}">Type</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="minPrice">Min Price</label>
+                            <input type="number" 
+                                   id="minPrice" 
+                                   name="minPrice" 
+                                   step="0.01" 
+                                   placeholder="0.00"
+                                   class="wa-input">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="maxPrice">Max Price</label>
+                            <input type="number" 
+                                   id="maxPrice" 
+                                   name="maxPrice" 
+                                   step="0.01" 
+                                   placeholder="999.99"
+                                   class="wa-input">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="available">Availability</label>
+                            <select id="available" name="available" class="wa-select">
+                                <option value="">All</option>
+                                <option value="true">Available Only</option>
+                                <option value="false">Unavailable Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="button" id="clear-filters" class="wa-button wa-button--secondary">
+                            <i class="fas fa-times"></i>
+                            Clear Filters
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="search-results-info" class="search-results-info">
+                    Enter search terms and click Search or press Enter to find products...
+                </div>
+            </div>
+            
+            <div id="search-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Searching...</p>
+            </div>
+            
+            <div id="search-results">
+                <!-- Search results will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <div id="delete-dialog" class="delete-dialog">
+        <div class="delete-dialog-content">
+            <h3>Delete Product</h3>
+            <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+            <div class="delete-dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDeleteDialog()">Cancel</button>
+                <button class="dialog-btn dialog-btn-delete" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Delete confirmation dialog */
+        .delete-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none !important;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .delete-dialog.show {
+            display: flex !important;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .delete-dialog-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .delete-dialog h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .delete-dialog p {
+            margin: 0 0 1.5rem 0;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .delete-dialog-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dialog-btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .dialog-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .dialog-btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .dialog-btn-delete:hover {
+            background: #b91c1c;
+        }
+    </style>
+
+    <script>
+        // Delete dialog functionality
+        let productToDelete = null;
+
+        // Ensure dialog is hidden on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const dialog = document.getElementById('delete-dialog');
+            if (dialog) {
+                dialog.classList.remove('show');
+            }
+        });
+
+        function openDeleteDialog(productId) {
+            productToDelete = productId;
+            document.getElementById('delete-dialog').classList.add('show');
+        }
+
+        function closeDeleteDialog() {
+            productToDelete = null;
+            document.getElementById('delete-dialog').classList.remove('show');
+        }
+
+        // Trigger search function
+        function triggerSearch() {
+            htmx.trigger('#search-form', 'submit');
+        }
+
+        // Add event listeners to all filter inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const productType = document.getElementById('productType');
+            const minPrice = document.getElementById('minPrice');
+            const maxPrice = document.getElementById('maxPrice');
+            const available = document.getElementById('available');
+            const clearFiltersBtn = document.getElementById('clear-filters');
+            const searchForm = document.getElementById('search-form');
+            const dialog = document.getElementById('delete-dialog');
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+
+            // Search input - trigger on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    triggerSearch();
+                }
+            });
+
+            // Other filters trigger search when changed
+            [productType, minPrice, maxPrice, available].forEach(input => {
+                input.addEventListener('change', triggerSearch);
+            });
+
+            // Clear filters button
+            clearFiltersBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                productType.value = '';
+                minPrice.value = '';
+                maxPrice.value = '';
+                available.value = '';
+                triggerSearch();
+            });
+
+            // Form submission
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                triggerSearch();
+            });
+
+            // Delete dialog event listeners
+            if (dialog) {
+                dialog.classList.remove('show');
+                
+                // Close dialog when clicking outside
+                dialog.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeDeleteDialog();
+                    }
+                });
+            }
+            
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    if (productToDelete) {
+                        // Use HTMX to delete the product
+                        htmx.ajax('DELETE', '/products/' + productToDelete, {
+                            target: '#search-results',
+                            swap: 'innerHTML'
+                        }).then(() => {
+                            // Refresh search results after deletion
+                            triggerSearch();
+                        });
+                        closeDeleteDialog();
+                    }
+                });
+            }
+        });
+
+        // Update search results info
+        function updateSearchInfo() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            const productType = document.getElementById('productType').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const available = document.getElementById('available').value;
+            const infoElement = document.getElementById('search-results-info');
+            
+            let filterText = '';
+            if (productType) filterText += ` type: ${productType}`;
+            if (minPrice) filterText += ` min: $${minPrice}`;
+            if (maxPrice) filterText += ` max: $${maxPrice}`;
+            if (available) filterText += ` available: ${available === 'true' ? 'yes' : 'no'}`;
+            
+            if (searchTerm.length === 0 && !filterText) {
+                infoElement.textContent = 'Enter search terms and click Search or press Enter to find products...';
+            } else {
+                infoElement.textContent = `Ready to search for "${searchTerm}"${filterText}...`;
+            }
+        }
+
+        // Handle search results
+        document.body.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.xhr.responseURL.includes('/products/search')) {
+                const searchTerm = document.getElementById('search-input').value.trim();
+                const infoElement = document.getElementById('search-results-info');
+                
+                // Count visible products in results
+                const productRows = document.querySelectorAll('#search-results .products-table tbody tr');
+                const productCount = productRows.length;
+                
+                if (productCount === 0) {
+                    infoElement.textContent = 'No products found matching your criteria';
+                } else {
+                    infoElement.textContent = `Found ${productCount} product${productCount === 1 ? '' : 's'}`;
+                }
+            }
+        });
+
+        // Update info on input changes
+        document.addEventListener('input', updateSearchInfo);
+        document.addEventListener('change', updateSearchInfo);
+
+        // Close dialog with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteDialog();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import com.fullstack.test.entity.Product
 import com.fullstack.test.entity.ProductVariant
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
+import java.math.BigDecimal
 import java.sql.ResultSet
 import java.time.LocalDateTime
 
@@ -74,6 +75,116 @@ class ProductRepository(
 
     fun deleteAll() {
         jdbcClient.sql("DELETE FROM products").update()
+    }
+
+    fun deleteById(id: Long): Boolean {
+        val rowsAffected = jdbcClient.sql("DELETE FROM products WHERE id = ?")
+            .param(id)
+            .update()
+        return rowsAffected > 0
+    }
+
+    fun findByTitleContaining(searchTerm: String): List<Product> {
+        return jdbcClient.sql("""
+            SELECT id, title, handle, vendor, product_type, price, compare_at_price, 
+                   sku, available, description, image_url, variants, created_at, updated_at
+            FROM products 
+            WHERE LOWER(title) LIKE LOWER(?)
+            ORDER BY created_at DESC
+        """.trimIndent())
+            .param("%$searchTerm%")
+            .query { rs, _ -> mapRowToProduct(rs) }
+            .list()
+    }
+
+    fun update(product: Product): Product? {
+        val variantsJson = product.variants?.let { objectMapper.writeValueAsString(it) }
+        
+        val rowsAffected = jdbcClient.sql("""
+            UPDATE products 
+            SET title = ?, handle = ?, vendor = ?, product_type = ?, price = ?, compare_at_price = ?, 
+                sku = ?, available = ?, description = ?, image_url = ?, variants = ?::jsonb, updated_at = ?
+            WHERE id = ?
+        """.trimIndent())
+            .params(
+                product.title,
+                product.handle,
+                product.vendor,
+                product.productType,
+                product.price,
+                product.compareAtPrice,
+                product.sku,
+                product.available,
+                product.description,
+                product.imageUrl,
+                variantsJson,
+                LocalDateTime.now(),
+                product.id
+            )
+            .update()
+
+        return if (rowsAffected > 0) product else null
+    }
+
+    fun findByFilters(
+        searchTerm: String?,
+        productType: String?,
+        minPrice: BigDecimal?,
+        maxPrice: BigDecimal?,
+        available: Boolean?
+    ): List<Product> {
+        var sql = """
+            SELECT id, title, handle, vendor, product_type, price, compare_at_price, 
+                   sku, available, description, image_url, variants, created_at, updated_at
+            FROM products 
+            WHERE 1=1
+        """.trimIndent()
+        
+        val params = mutableListOf<Any>()
+        var paramIndex = 1
+        
+        if (!searchTerm.isNullOrBlank()) {
+            sql += " AND LOWER(title) LIKE LOWER(?)"
+            params.add("%$searchTerm%")
+            paramIndex++
+        }
+        
+        if (!productType.isNullOrBlank()) {
+            sql += " AND LOWER(product_type) = LOWER(?)"
+            params.add(productType)
+            paramIndex++
+        }
+        
+        if (minPrice != null) {
+            sql += " AND price >= ?"
+            params.add(minPrice)
+            paramIndex++
+        }
+        
+        if (maxPrice != null) {
+            sql += " AND price <= ?"
+            params.add(maxPrice)
+            paramIndex++
+        }
+        
+        if (available != null) {
+            sql += " AND available = ?"
+            params.add(available)
+            paramIndex++
+        }
+        
+        sql += " ORDER BY created_at DESC"
+        
+        return jdbcClient.sql(sql)
+            .params(*params.toTypedArray())
+            .query { rs, _ -> mapRowToProduct(rs) }
+            .list()
+    }
+
+    fun getDistinctProductTypes(): List<String> {
+        return jdbcClient.sql("SELECT DISTINCT product_type FROM products WHERE product_type IS NOT NULL ORDER BY product_type")
+            .query(String::class.java)
+            .list()
     }
 
     private fun mapRowToProduct(rs: ResultSet): Product {
